@@ -1,0 +1,5 @@
+rootProject.name = 'backend'
+
+include ':commonModule'
+include ':auth-service'
+include ':chatService'
