@@ -8,11 +8,10 @@ import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
 import temp.commonModule.code.ErrorCode;
-import temp.commonModule.exception.JwtKeyLoadException;
+import com.temp.backend.global.exception.JwtKeyLoadException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.KeyFactory;
@@ -82,8 +81,6 @@ public class JwtUtil {
             PKCS8EncodedKeySpec spec = new PKCS8EncodedKeySpec(keyBytes);
             KeyFactory kf = KeyFactory.getInstance("RSA");
             return kf.generatePrivate(spec);
-        } catch (IOException e) {
-            throw new JwtKeyLoadException(ErrorCode.JWT_KEY_LOAD_FAILED, e);
         } catch (Exception e) {
             throw new JwtKeyLoadException(ErrorCode.JWT_KEY_LOAD_FAILED, e);
         }

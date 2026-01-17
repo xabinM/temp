@@ -5,11 +5,12 @@ import com.temp.backend.auth.dto.RegisterRequest;
 import com.temp.backend.domain.user.entity.User;
 import com.temp.backend.domain.user.repository.UserRepository;
 import temp.commonModule.code.ErrorCode;
-import temp.commonModule.exception.MemberAlreadyExistsException;
+import com.temp.backend.global.exception.MemberAlreadyExistsException;
 import com.temp.backend.global.jwt.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +46,8 @@ public class AuthService {
                         request.getPassword()
                 )
         );
-        var user = userRepository.findByEmail(request.getEmail()).get();
+        var user = userRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
         return jwtUtil.generateToken(user.getUsername());
     }
 }
