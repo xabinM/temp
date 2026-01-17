@@ -7,8 +7,8 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.crypto.RSASSASigner;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
-import com.temp.backend.global.code.ErrorCode;
-import com.temp.backend.global.exception.JwtKeyLoadException;
+import temp.commonModule.code.ErrorCode;
+import temp.commonModule.exception.JwtKeyLoadException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
