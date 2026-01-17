@@ -1,4 +1,4 @@
-package com.temp.backend.global.code;
+package temp.commonModule.code;
 
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;

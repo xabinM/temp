@@ -1,14 +1,11 @@
 package com.temp.backend.global.exception;
 
-import com.temp.backend.global.code.ErrorCode;
-import lombok.Getter;
+import temp.commonModule.code.ErrorCode;
+import temp.commonModule.exception.BusinessException;
 
-@Getter
-public class MemberAlreadyExistsException extends RuntimeException {
-    private final ErrorCode errorCode;
+public class MemberAlreadyExistsException extends BusinessException {
 
     public MemberAlreadyExistsException(ErrorCode errorCode) {
-        super(errorCode.getMessage());
-        this.errorCode = errorCode;
+        super(errorCode);
     }
 }
