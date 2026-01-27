@@ -1,6 +1,6 @@
-package com.temp.backend.global.exception.dto;
+package temp.commonModule.exception.dto;
 
-import com.temp.backend.global.code.ErrorCode;
+import temp.commonModule.code.ErrorCode;
 import lombok.Getter;
 
 @Getter

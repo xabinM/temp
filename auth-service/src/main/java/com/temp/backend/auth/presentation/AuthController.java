@@ -5,7 +5,7 @@ import com.temp.backend.auth.dto.AuthenticationRequest;
 import com.temp.backend.auth.dto.AuthenticationResponse;
 import com.temp.backend.auth.dto.RegisterRequest;
 import com.temp.backend.auth.dto.RegisterResponse;
-import com.temp.backend.global.code.SuccessCode;
+import temp.commonModule.code.SuccessCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
