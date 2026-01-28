@@ -6,9 +6,11 @@ import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
 import temp.chatService.model.ChatMessage;
 import temp.chatService.model.WsDestination;
 
+@RequestMapping("/api/chat")
 @Controller
 public class ChatController {
 
@@ -18,14 +20,14 @@ public class ChatController {
         this.messagingTemplate = messagingTemplate;
     }
 
-    @MessageMapping("/chat/sendMessage")
+    @MessageMapping("/sendMessage")
     public void sendMessage(@Payload ChatMessage chatMessage) {
         messagingTemplate.convertAndSend(
                 WsDestination.CHAT_ROOM,
                 chatMessage);
     }
 
-    @MessageMapping("/chat/addUser")
+    @MessageMapping("/addUser")
     @SendTo("/topic/public")
     public ChatMessage addUser(@Payload ChatMessage chatMessage,
                                SimpMessageHeaderAccessor headerAccessor) {
