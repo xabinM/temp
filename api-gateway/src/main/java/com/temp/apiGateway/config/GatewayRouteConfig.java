@@ -14,6 +14,9 @@ public class GatewayRouteConfig {
                 .route("auth-service", r -> r
                         .path("/api/auth/**")
                         .uri("lb://auth-service"))
+                .route("chat-service", r -> r
+                        .path("/api/chat/**")
+                        .uri("lb:ws://chat-service"))
                 .build();
     }
 }
