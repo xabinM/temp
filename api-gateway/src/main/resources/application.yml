@@ -23,3 +23,5 @@ eureka:
 logging:
   level:
     org.springframework.cloud.gateway: TRACE
+    org.springframework.security: TRACE
+    org.springframework.security.oauth2: TRACE
