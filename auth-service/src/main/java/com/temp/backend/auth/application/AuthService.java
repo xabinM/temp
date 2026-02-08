@@ -36,7 +36,7 @@ public class AuthService {
                 request.getRole()
         );
         userRepository.save(user);
-        return jwtUtil.generateToken(user.getUsername());
+        return jwtUtil.generateToken(user.getUsername(), String.valueOf(user.getRole()));
     }
 
     public String authenticate(AuthenticationRequest request) {
@@ -48,6 +48,6 @@ public class AuthService {
         );
         var user = userRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException(ErrorCode.MEMBER_NOT_FOUND.getMessage()));
-        return jwtUtil.generateToken(user.getUsername());
+        return jwtUtil.generateToken(user.getUsername(), String.valueOf(user.getRole()));
     }
 }

@@ -32,8 +32,9 @@ public class JwtUtil {
     @Value("${jwt.expiration}")
     private long expirationTime;
 
-    public String generateToken(String username) {
+    public String generateToken(String username, String role) {
         Map<String, Object> claims = new HashMap<>();
+        claims.put("role", role);
         return createToken(claims, username);
     }
 
@@ -50,7 +51,6 @@ public class JwtUtil {
                     .issueTime(now)
                     .expirationTime(expiration);
 
-            // 추가 클레임 설정
             for (Map.Entry<String, Object> entry : claims.entrySet()) {
                 claimsSetBuilder.claim(entry.getKey(), entry.getValue());
             }
