@@ -2,8 +2,6 @@ package temp.chatService.controller;
 
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
-import org.springframework.messaging.handler.annotation.SendTo;
-import org.springframework.messaging.simp.SimpMessageHeaderAccessor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -32,17 +30,7 @@ public class ChatController {
     @MessageMapping("/sendMessage")
     public void sendMessage(@Payload ChatMessageDto chatMessage) {
         chatMessageService.save(chatMessage);
-        messagingTemplate.convertAndSend(
-                WsDestination.CHAT_ROOM + chatMessage.getRoomId(),
-                chatMessage);
-    }
-
-    @MessageMapping("/addUser")
-    @SendTo("/topic/public")
-    public ChatMessageDto addUser(@Payload ChatMessageDto chatMessage,
-                               SimpMessageHeaderAccessor headerAccessor) {
-        headerAccessor.getSessionAttributes().put("username", chatMessage.getSender());
-        return chatMessage;
+        messagingTemplate.convertAndSend(WsDestination.CHAT_ROOM + chatMessage.getRoomId(), chatMessage);
     }
 
     @GetMapping("/rooms/{roomId}/messages")
