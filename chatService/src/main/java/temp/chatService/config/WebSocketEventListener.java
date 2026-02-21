@@ -9,12 +9,14 @@ import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 import temp.chatService.model.ChatMessageDto;
 import temp.chatService.model.WsDestination;
+import temp.chatService.service.ChatRoomService;
 
 @Component
 @RequiredArgsConstructor
 public class WebSocketEventListener {
 
     private final SimpMessagingTemplate messagingTemplate;
+    private final ChatRoomService chatRoomService;
 
     @EventListener
     public void handleSubscribe(SessionSubscribeEvent event) {
@@ -32,6 +34,10 @@ public class WebSocketEventListener {
 
         String username = accessor.getUser() != null ? accessor.getUser().getName() : null;
         if (username == null) {
+            return;
+        }
+
+        if (!chatRoomService.isMember(roomId, username)) {
             return;
         }
 
