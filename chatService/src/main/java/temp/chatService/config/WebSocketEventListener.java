@@ -44,6 +44,8 @@ public class WebSocketEventListener {
         accessor.getSessionAttributes().put("username", username);
         accessor.getSessionAttributes().put("roomId", roomId);
 
+        chatRoomService.updateOnlineStatus(roomId, username, true);
+
         ChatMessageDto joinMessage = new ChatMessageDto();
         joinMessage.setType(ChatMessageDto.MessageType.JOIN);
         joinMessage.setSender(username);
@@ -62,12 +64,11 @@ public class WebSocketEventListener {
             return;
         }
 
-        ChatMessageDto leaveMessage = new ChatMessageDto();
-        leaveMessage.setType(ChatMessageDto.MessageType.LEAVE);
-        leaveMessage.setSender(username);
-        leaveMessage.setRoomId(roomId);
-
-        messagingTemplate.convertAndSend(WsDestination.CHAT_ROOM + roomId, leaveMessage);
+        // disconnect는 자리비움이므로 LEAVE 브로드캐스트 하지 않음
+        // 멤버십이 남아있으면(명시적 leave 없이 끊긴 것) offline 상태로 전환 → 3단계에서 알림 대상으로 처리
+        if (chatRoomService.isMember(roomId, username)) {
+            chatRoomService.updateOnlineStatus(roomId, username, false);
+        }
     }
 
     private Long parseRoomId(String destination) {

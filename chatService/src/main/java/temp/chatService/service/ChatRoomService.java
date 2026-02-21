@@ -49,4 +49,10 @@ public class ChatRoomService {
     public boolean isMember(Long roomId, String userId) {
         return chatRoomMemberRepository.existsByRoomIdAndUserId(roomId, userId);
     }
+
+    @Transactional
+    public void updateOnlineStatus(Long roomId, String userId, boolean isOnline) {
+        chatRoomMemberRepository.findByRoomIdAndUserId(roomId, userId)
+                .ifPresent(member -> member.updateOnlineStatus(isOnline));
+    }
 }
