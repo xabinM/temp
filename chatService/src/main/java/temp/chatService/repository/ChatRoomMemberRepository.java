@@ -10,4 +10,6 @@ public interface ChatRoomMemberRepository extends JpaRepository<ChatRoomMember, 
     void deleteByRoomIdAndUserId(Long roomId, String userId);
 
     java.util.Optional<ChatRoomMember> findByRoomIdAndUserId(Long roomId, String userId);
+
+    java.util.List<ChatRoomMember> findByRoomIdAndIsOnlineFalse(Long roomId);
 }

@@ -50,6 +50,10 @@ public class ChatRoomService {
         return chatRoomMemberRepository.existsByRoomIdAndUserId(roomId, userId);
     }
 
+    public List<ChatRoomMember> getOfflineMembers(Long roomId) {
+        return chatRoomMemberRepository.findByRoomIdAndIsOnlineFalse(roomId);
+    }
+
     @Transactional
     public void updateOnlineStatus(Long roomId, String userId, boolean isOnline) {
         chatRoomMemberRepository.findByRoomIdAndUserId(roomId, userId)
