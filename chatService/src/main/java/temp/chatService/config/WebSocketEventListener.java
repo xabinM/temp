@@ -2,20 +2,22 @@ package temp.chatService.config;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.event.EventListener;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.messaging.simp.stomp.StompHeaderAccessor;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
-import temp.chatService.model.ChatMessageDto;
+import org.springframework.web.socket.messaging.SessionUnsubscribeEvent;
 import temp.chatService.model.WsDestination;
 import temp.chatService.service.ChatRoomService;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
 public class WebSocketEventListener {
 
-    private final SimpMessagingTemplate messagingTemplate;
+    private final RedisMessagePublisher redisMessagePublisher;
     private final ChatRoomService chatRoomService;
 
     @EventListener
@@ -42,33 +44,52 @@ public class WebSocketEventListener {
         }
 
         accessor.getSessionAttributes().put("username", username);
-        accessor.getSessionAttributes().put("roomId", roomId);
+
+        // UNSUBSCRIBE 프레임은 destination 없이 subscriptionId만 오므로
+        // subscriptionId → roomId 매핑을 세션에 저장
+        getSubscriptionMap(accessor).put(accessor.getSubscriptionId(), roomId);
 
         chatRoomService.updateOnlineStatus(roomId, username, true);
 
-        ChatMessageDto joinMessage = new ChatMessageDto();
-        joinMessage.setType(ChatMessageDto.MessageType.JOIN);
-        joinMessage.setSender(username);
-        joinMessage.setRoomId(roomId);
+        redisMessagePublisher.publishJoin(roomId, username);
+    }
 
-        messagingTemplate.convertAndSend(WsDestination.CHAT_ROOM + roomId, joinMessage);
+    @EventListener
+    public void handleUnsubscribe(SessionUnsubscribeEvent event) {
+        StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
+
+        // subscriptionId로 roomId 조회
+        Long roomId = getSubscriptionMap(accessor).remove(accessor.getSubscriptionId());
+        if (roomId == null) {
+            return;
+        }
+
+        String username = (String) accessor.getSessionAttributes().get("username");
+        if (username == null) {
+            return;
+        }
+
+        chatRoomService.updateOnlineStatus(roomId, username, false);
     }
 
     @EventListener
     public void handleDisconnect(SessionDisconnectEvent event) {
         StompHeaderAccessor accessor = StompHeaderAccessor.wrap(event.getMessage());
         String username = (String) accessor.getSessionAttributes().get("username");
-        Long roomId = (Long) accessor.getSessionAttributes().get("roomId");
-
-        if (username == null || roomId == null) {
+        if (username == null) {
             return;
         }
 
-        // disconnect는 자리비움이므로 LEAVE 브로드캐스트 하지 않음
-        // 멤버십이 남아있으면(명시적 leave 없이 끊긴 것) offline 상태로 전환 → 3단계에서 알림 대상으로 처리
-        if (chatRoomService.isMember(roomId, username)) {
-            chatRoomService.updateOnlineStatus(roomId, username, false);
-        }
+        // 앱 종료 시 아직 구독 중인 모든 방을 offline 처리
+        // Redis DEL은 존재하지 않는 키에 대해 no-op이므로 별도 검증 불필요
+        getSubscriptionMap(accessor).values()
+                .forEach(roomId -> chatRoomService.updateOnlineStatus(roomId, username, false));
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Long> getSubscriptionMap(StompHeaderAccessor accessor) {
+        return (Map<String, Long>) accessor.getSessionAttributes()
+                .computeIfAbsent("subscriptions", k -> new HashMap<>());
     }
 
     private Long parseRoomId(String destination) {
