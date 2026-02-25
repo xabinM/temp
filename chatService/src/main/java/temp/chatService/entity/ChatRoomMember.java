@@ -27,21 +27,13 @@ public class ChatRoomMember {
     @Column(nullable = false, updatable = false)
     private LocalDateTime joinedAt;
 
-    @Column(nullable = false)
-    private boolean isOnline;
-
     private ChatRoomMember(Long roomId, String userId) {
         this.roomId = roomId;
         this.userId = userId;
         this.joinedAt = LocalDateTime.now();
-        this.isOnline = false;
     }
 
     public static ChatRoomMember create(Long roomId, String userId) {
         return new ChatRoomMember(roomId, userId);
-    }
-
-    public void updateOnlineStatus(boolean isOnline) {
-        this.isOnline = isOnline;
     }
 }
