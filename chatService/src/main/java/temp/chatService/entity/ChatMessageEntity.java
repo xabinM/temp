@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import temp.chatService.model.ChatMessageDto;
+import temp.chatService.model.MessageType;
 
 import java.time.LocalDateTime;
 
@@ -21,7 +21,7 @@ public class ChatMessageEntity {
     private Long roomId;
 
     @Enumerated(EnumType.STRING)
-    private ChatMessageDto.MessageType type;
+    private MessageType type;
 
     private String content;
 
@@ -30,7 +30,7 @@ public class ChatMessageEntity {
     @Column(nullable = false, updatable = false)
     private LocalDateTime sentAt;
 
-    private ChatMessageEntity(Long roomId, ChatMessageDto.MessageType type, String content, String sender, LocalDateTime sentAt) {
+    private ChatMessageEntity(Long roomId, MessageType type, String content, String sender, LocalDateTime sentAt) {
         this.roomId = roomId;
         this.type = type;
         this.content = content;
@@ -38,13 +38,7 @@ public class ChatMessageEntity {
         this.sentAt = sentAt;
     }
 
-    public static ChatMessageEntity from(ChatMessageDto message) {
-        return new ChatMessageEntity(
-                message.getRoomId(),
-                message.getType(),
-                message.getContent(),
-                message.getSender(),
-                LocalDateTime.now()
-        );
+    public static ChatMessageEntity create(Long roomId, MessageType type, String content, String sender) {
+        return new ChatMessageEntity(roomId, type, content, sender, LocalDateTime.now());
     }
 }
