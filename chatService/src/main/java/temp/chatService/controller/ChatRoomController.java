@@ -2,15 +2,17 @@ package temp.chatService.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-import temp.chatService.entity.ChatRoom;
-import temp.chatService.model.ChatMessageDto;
-import temp.chatService.model.WsDestination;
+import temp.chatService.model.ChatRoomInfo;
+import temp.chatService.model.ChatRoomListResponse;
+import temp.chatService.model.ChatRoomResponse;
 import temp.chatService.service.ChatRoomService;
+import temp.commonModule.code.SuccessCode;
+import temp.commonModule.response.SuccessResponse;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/chat/rooms")
@@ -18,35 +20,36 @@ import java.util.List;
 public class ChatRoomController {
 
     private final ChatRoomService chatRoomService;
-    private final SimpMessagingTemplate messagingTemplate;
 
     @PostMapping
-    public ResponseEntity<ChatRoom> createRoom(@RequestParam String name) {
-        return ResponseEntity.ok(chatRoomService.createRoom(name));
+    public ResponseEntity<ChatRoomResponse> createRoom(@RequestParam String name) {
+        return ResponseEntity
+                .status(SuccessCode.ROOM_CREATE_SUCCESS.getStatus())
+                .body(ChatRoomResponse.of(chatRoomService.createRoom(name), SuccessCode.ROOM_CREATE_SUCCESS.getMessage()));
     }
 
     @GetMapping
-    public ResponseEntity<List<ChatRoom>> getRooms() {
-        return ResponseEntity.ok(chatRoomService.getRooms());
+    public ResponseEntity<ChatRoomListResponse> getRooms(Authentication authentication) {
+        List<ChatRoomInfo> rooms = chatRoomService.getMyRooms(authentication.getName()).stream()
+                .map(ChatRoomInfo::from)
+                .collect(Collectors.toList());
+        return ResponseEntity
+                .status(SuccessCode.ROOMS_FETCH_SUCCESS.getStatus())
+                .body(ChatRoomListResponse.of(rooms, SuccessCode.ROOMS_FETCH_SUCCESS.getMessage()));
     }
 
     @PostMapping("/{roomId}/join")
-    public ResponseEntity<Void> join(@PathVariable Long roomId, Authentication authentication) {
-        chatRoomService.join(roomId, authentication.getName());
-        return ResponseEntity.ok().build();
+    public ResponseEntity<ChatRoomResponse> join(@PathVariable Long roomId, Authentication authentication) {
+        return ResponseEntity
+                .status(SuccessCode.ROOM_JOIN_SUCCESS.getStatus())
+                .body(ChatRoomResponse.of(chatRoomService.join(roomId, authentication.getName()), SuccessCode.ROOM_JOIN_SUCCESS.getMessage()));
     }
 
     @DeleteMapping("/{roomId}/leave")
-    public ResponseEntity<Void> leave(@PathVariable Long roomId, Authentication authentication) {
-        String userId = authentication.getName();
-        chatRoomService.leave(roomId, userId);
-
-        ChatMessageDto leaveMessage = new ChatMessageDto();
-        leaveMessage.setType(ChatMessageDto.MessageType.LEAVE);
-        leaveMessage.setSender(userId);
-        leaveMessage.setRoomId(roomId);
-        messagingTemplate.convertAndSend(WsDestination.CHAT_ROOM + roomId, leaveMessage);
-
-        return ResponseEntity.ok().build();
+    public ResponseEntity<SuccessResponse> leave(@PathVariable Long roomId, Authentication authentication) {
+        chatRoomService.leave(roomId, authentication.getName());
+        return ResponseEntity
+                .status(SuccessCode.ROOM_LEAVE_SUCCESS.getStatus())
+                .body(SuccessResponse.of(SuccessCode.ROOM_LEAVE_SUCCESS.getMessage()));
     }
 }
